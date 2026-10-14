@@ -1,4 +1,5 @@
 <!-- mcp-name: io.github.sepehr071/snapp-mcp -->
+> **Fork status — research only:** This fork currently contains the upstream **Snappfood/SnappMarket MCP**, not a working Tapsi Food MCP. The badges, install commands, examples, and tool list below still describe **upstream snapp-mcp**; running them will access Snapp, **not Tapsi**. Do not install or publish this fork as a Tapsi server yet. See [Tapsi API findings](research/tapsi-api-findings.md) and the [agent implementation task list](docs/superpowers/plans/2026-10-14-tapsi-food-mcp.md). Upstream attribution and MIT license are preserved.
 
 <div align="center">
 

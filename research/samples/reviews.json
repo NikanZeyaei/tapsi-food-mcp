@@ -1,0 +1,414 @@
+{
+ "_evidence": {
+  "p0": "https://api.tapsi.food/v1/api/Vendor/2y97wk/profile?pageSize=20&pageNumber=0",
+  "p1": "https://api.tapsi.food/v1/api/Vendor/2y97wk/profile?pageSize=20&pageNumber=1",
+  "status": 200
+ },
+ "page0": {
+  "statusCode": 200,
+  "message": "Success",
+  "data": {
+   "info": {
+    "vendorCode": "2y97wk",
+    "title": "فست فود مارچوبه",
+    "vendorStatus": "Close",
+    "minimumBasket": 300000,
+    "businessTypeId": 1,
+    "cityId": 2,
+    "eta": 55,
+    "address": {
+     "addressDetails": "میدان توحید، ابتدای ستارخان، نبش کوچه صیامی ، پلاک 39 ، (فست فود مارچوبه)",
+     "location": {
+      "latitude": 35.707,
+      "longitude": 51.376
+     }
+    }
+   },
+   "shift": {
+    "todayOperatingSchedule": {
+     "dayOfWeek": 3,
+     "workingHours": [
+      {
+       "startTime": "11:00:00",
+       "endTime": "23:45:00"
+      }
+     ]
+    },
+    "weeklySchedule": [
+     {
+      "dayOfWeek": 0,
+      "workingHours": [
+       {
+        "startTime": "11:00:00",
+        "endTime": "23:45:00"
+       }
+      ]
+     },
+     {
+      "dayOfWeek": 1,
+      "workingHours": [
+       {
+        "startTime": "11:00:00",
+        "endTime": "23:45:00"
+       }
+      ]
+     },
+     {
+      "dayOfWeek": 2,
+      "workingHours": [
+       {
+        "startTime": "11:00:00",
+        "endTime": "23:45:00"
+       }
+      ]
+     },
+     {
+      "dayOfWeek": 3,
+      "workingHours": [
+       {
+        "startTime": "11:00:00",
+        "endTime": "23:45:00"
+       }
+      ]
+     },
+     {
+      "dayOfWeek": 4,
+      "workingHours": [
+       {
+        "startTime": "11:00:00",
+        "endTime": "23:45:00"
+       }
+      ]
+     },
+     {
+      "dayOfWeek": 5,
+      "workingHours": [
+       {
+        "startTime": "11:00:00",
+        "endTime": "23:45:00"
+       }
+      ]
+     },
+     {
+      "dayOfWeek": 6,
+      "workingHours": [
+       {
+        "startTime": "11:00:00",
+        "endTime": "23:45:00"
+       }
+      ]
+     }
+    ]
+   },
+   "insight": {
+    "reviews": [
+     {
+      "vendorCode": "2y97wk",
+      "writerName": "نگین حیدریان",
+      "createdAt": "2026-10-13T17:18:30.621Z",
+      "orderRating": 5,
+      "orderItems": [
+       {
+        "productName": "قارچ سوخاری",
+        "rating": 5,
+        "comment": "خیلی عالی و تازه بود فقط مشکل کم نمک بودنش بود",
+        "replies": []
+       },
+       {
+        "productName": "برگر با سس قارچ ",
+        "rating": 5,
+        "comment": "همه چی عالی بود سیب زمینی با اینکه سرخ شده بود فوق العاده چیپسی و کرانچی چقدر خوب که سس قارچ جدا هم سرو شده بود فقط تنها مشکل کم نمک بودن همه چی بود",
+        "replies": []
+       }
+      ]
+     },
+     {
+      "vendorCode": "2y97wk",
+      "writerName": "فرید کرم نیا",
+      "createdAt": "2026-10-12T11:12:08.17Z",
+      "orderRating": 2,
+      "orderItems": [
+       {
+        "productName": "پیتزا پپرونی ایتالیایی ( ۳۲ سانتی متری)",
+        "rating": 1,
+        "comment": "پیتزای خوبی بود اما پپرونی باید تند باشه حداقل یکم اصلأ تند نبود و سرد سرد بود پیتزا",
+        "replies": []
+       }
+      ]
+     },
+     {
+      "vendorCode": "2y97wk",
+      "writerName": "فرهان دانایی",
+      "createdAt": "2026-10-09T18:24:58.577Z",
+      "orderRating": 5,
+      "orderItems": [
+       {
+        "productName": "پیتزا میکس اسپشیال آمریکایی (۳۲ سانتی متری)",
+        "rating": 5,
+        "comment": "من چند باری خرید کردم و بسیار خیلی خوشمزه و داغ بودش",
+        "replies": []
+       }
+      ]
+     },
+     {
+      "vendorCode": "2y97wk",
+      "writerName": "شکیلا رحیمی",
+      "createdAt": "2026-10-09T08:23:04.826Z",
+      "orderRating": 5,
+      "orderItems": [
+       {
+        "productName": "پیتزا مارگاریتا ایتالیایی ( ۳۲ سانتی متری)",
+        "rating": 5,
+        "comment": "عالی سه بار از رستورانتون غذا گرفتم، مارگاریتاتون بهترین مارگاریتایی بود که تو این چند ناه خوردم و این پیزای بیکنتونم عالی بود",
+        "replies": []
+       }
+      ]
+     },
+     {
+      "vendorCode": "2y97wk",
+      "writerName": "تینا قدیمی",
+      "createdAt": "2026-10-08T18:50:15.864Z",
+      "orderRating": 5,
+      "orderItems": [
+       {
+        "productName": "پیتزا پپرونی ایتالیایی ( ۳۲ سانتی متری)",
+        "rating": 5,
+        "comment": "عالی بودددد",
+        "replies": []
+       }
+      ]
+     },
+     {
+      "vendorCode": "2y97wk",
+      "writerName": "مهدییار حسنپور",
+      "createdAt": "2026-10-07T18:30:53.042Z",
+      "orderRating": 1,
+      "orderItems": [
+       {
+        "productName": "نوشابه خانواده",
+        "rating": 5,
+        "comment": "نوشابه تنها بخش خوب بود که باز دستشون درد نکنه گازش نرفته بود و خنک بود به نوشابه ۱۰/۱۰میدم‌",
+        "replies": []
+       }
+      ]
+     },
+     {
+      "vendorCode": "2y97wk",
+      "writerName": "سهیل اشرف الکتابی",
+      "createdAt": "2026-10-04T15:27:26.294Z",
+      "orderRating": 5,
+      "orderItems": [
+       {
+        "productName": "پیتزا بیکن ایتالیایی ( ۳۲ سانتی متری)",
+        "rating": 5,
+        "comment": "اگر غذا کمی گرم تر به دستم می‌رسید بهتر بود نسبت به قیمت خوب بود ولی تناسب قیمت و حجم برقرار نبود.",
+        "replies": []
+       }
+      ]
+     },
+     {
+      "vendorCode": "2y97wk",
+      "writerName": "عاطفه دمیرچی",
+      "createdAt": "2026-10-03T10:03:45.796Z",
+      "orderRating": 5,
+      "orderItems": [
+       {
+        "productName": "پیتزا بیکن ایتالیایی ( ۳۲ سانتی متری)",
+        "rating": 5,
+        "comment": "خیلی خوب بود ممنون از مارچوبه",
+        "replies": []
+       }
+      ]
+     },
+     {
+      "vendorCode": "2y97wk",
+      "writerName": "ز زرگری",
+      "createdAt": "2026-09-27T07:35:07.822Z",
+      "orderRating": 4,
+      "orderItems": [
+       {
+        "productName": "چیکن استریپس (سه تیکه)",
+        "rating": 5,
+        "comment": "کمی خوب سوخاری نشده بود و مرغ و لایه سوخاری کاملا از هم جدا بودن حجم غذا خیلی مناسب بود",
+        "replies": []
+       }
+      ]
+     },
+     {
+      "vendorCode": "2y97wk",
+      "writerName": "مهدی ماندگاری",
+      "createdAt": "2026-09-26T18:00:57.835Z",
+      "orderRating": 3,
+      "orderItems": [
+       {
+        "productName": "پیتزا پپرونی ایتالیایی ( ۳۲ سانتی متری)",
+        "rating": 1,
+        "comment": "فکر کنم به‌جای تنور، از یخچال استفاده کرده بودن. انقد که سرد بود",
+        "replies": []
+       }
+      ]
+     },
+     {
+      "vendorCode": "2y97wk",
+      "writerName": "محمود اسماعیل بیگی",
+      "createdAt": "2026-09-20T10:01:57.624Z",
+      "orderRating": 5,
+      "orderItems": [
+       {
+        "productName": "پیتزا چیکن ماشروم ایتالیایی ( ۳۲ سانتی متری)",
+        "rating": 5,
+        "comment": "همه چی خوب بود فقط خمیر یکم خشک میشه این مورد رو رعایت کنید عالی میشه ممنون از مجموعه خوبتون",
+        "replies": []
+       }
+      ]
+     },
+     {
+      "vendorCode": "2y97wk",
+      "writerName": "مهناز آزاد",
+      "createdAt": "2026-09-17T18:32:42.222Z",
+      "orderRating": 3,
+      "orderItems": [
+       {
+        "productName": "پیتزا بیکن ایتالیایی ( ۳۲ سانتی متری)",
+        "rating": 1,
+        "comment": "پیتزا سرد بود کاملا، کاش اینطور نبود",
+        "replies": []
+       }
+      ]
+     },
+     {
+      "vendorCode": "2y97wk",
+      "writerName": "راحیل حقنگر",
+      "createdAt": "2026-09-17T16:41:01.256Z",
+      "orderRating": 5,
+      "orderItems": [
+       {
+        "productName": "پیتزا بیکن ایتالیایی ( ۳۲ سانتی متری)",
+        "rating": 5,
+        "comment": "سپاس از پیک بسیار محترم و مارچوبه امشب این پیتزا رو برای تست گرفتم، اما شرایط مناسبی فراهم کرده تا خیلی‌ها بتونن در این شرایط اقتصادی، پیتزا سفارش بدن. مردم‌داری و مشتری مداری شما، قابل تحسینه‌.",
+        "replies": []
+       }
+      ]
+     },
+     {
+      "vendorCode": "2y97wk",
+      "writerName": "کاربر تپسی‌فود",
+      "createdAt": "2026-09-17T16:08:31.748Z",
+      "orderRating": 4,
+      "orderItems": [
+       {
+        "productName": "پیتزا بیکن ایتالیایی ( ۳۲ سانتی متری)",
+        "rating": 5,
+        "comment": "با نیم ساعت تاخیر رسید، ولی وقتی گرمش کردم خوب بود",
+        "replies": []
+       }
+      ]
+     },
+     {
+      "vendorCode": "2y97wk",
+      "writerName": "محمد شمسی",
+      "createdAt": "2026-09-17T16:01:56.405Z",
+      "orderRating": 3,
+      "orderItems": [
+       {
+        "productName": "پیتزا بیف ماشروم ایتالیایی ( ۳۲ سانتی متری)",
+        "rating": 1,
+        "comment": "به‌اندازه قیمت ارزش ندارد",
+        "replies": []
+       }
+      ]
+     },
+     {
+      "vendorCode": "2y97wk",
+      "writerName": "سپیده  تاجیک",
+      "createdAt": "2026-09-17T16:01:19.843Z",
+      "orderRating": 5,
+      "orderItems": [
+       {
+        "productName": "پیتزا بیف ماشروم ایتالیایی ( ۳۲ سانتی متری)",
+        "rating": 5,
+        "comment": "اینقدر با کیفیت و خوشمزه بود که کلی کیف کردیم  خدا به کسبتون برکت بده",
+        "replies": []
+       }
+      ]
+     },
+     {
+      "vendorCode": "2y97wk",
+      "writerName": "عرفان ۷۸",
+      "createdAt": "2026-09-17T08:25:07.509Z",
+      "orderRating": 3,
+      "orderItems": [
+       {
+        "productName": "پیتزا پپرونی ایتالیایی ( ۳۲ سانتی متری)",
+        "rating": 1,
+        "comment": "هیچی جز نون و پپرونی نداشت . حداقل ی قارچ یا زیتون بریزید حتی برای تزئین",
+        "replies": []
+       }
+      ]
+     },
+     {
+      "vendorCode": "2y97wk",
+      "writerName": "م حق نگهدار",
+      "createdAt": "2026-09-16T08:28:13.858Z",
+      "orderRating": 2,
+      "orderItems": [
+       {
+        "productName": "پیتزا چیکن ماشروم ایتالیایی ( ۳۲ سانتی متری)",
+        "rating": 1,
+        "comment": "نونش بزرگه ولی تقریبا مرغ یا گوشتی در اون نیست",
+        "replies": []
+       }
+      ]
+     },
+     {
+      "vendorCode": "2y97wk",
+      "writerName": "مهدی باقری",
+      "createdAt": "2026-09-16T08:14:38.943Z",
+      "orderRating": 4,
+      "orderItems": [
+       {
+        "productName": "پیتزا بیف ماشروم ایتالیایی ( ۳۲ سانتی متری)",
+        "rating": 1,
+        "comment": "انگار خمیر پیتزا رو از زیر مواد پیتزا رد کرده بودید  خیلی کم بود مواد پیتزاش",
+        "replies": []
+       },
+       {
+        "productName": "پیتزا بیکن ایتالیایی ( ۳۲ سانتی متری)",
+        "rating": 5,
+        "comment": "پیتزا بیکن خوب و خوشمزه بود و موادش هم به اندازه بود  عالی بود",
+        "replies": []
+       }
+      ]
+     }
+    ],
+    "rateDetails": {
+     "rate": 4.24492
+    }
+   },
+   "meta": {
+    "pageSize": 20,
+    "pageNumber": 0,
+    "total": 88
+   }
+  }
+ },
+ "page1_meta": {
+  "pageSize": 20,
+  "pageNumber": 1,
+  "total": 88
+ },
+ "page1_first": {
+  "vendorCode": "2y97wk",
+  "writerName": "مریم چگینی",
+  "createdAt": "2026-09-15T15:42:46.988Z",
+  "orderRating": 5,
+  "orderItems": [
+   {
+    "productName": "پیتزا پپرونی ایتالیایی ( ۳۲ سانتی متری)",
+    "rating": 5,
+    "comment": "برای من کاملا ارزش خرید داشت.خوشمزه،حجیم،تر و تازه،گرم.",
+    "replies": []
+   }
+  ]
+ }
+}
