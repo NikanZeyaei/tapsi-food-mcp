@@ -6,7 +6,7 @@ body:
     id: tool
     attributes:
       label: Tool
-      description: Which tool, e.g. food_find_cheapest
+      description: Which tool, e.g. tapsi_search_products
     validations:
       required: true
   - type: textarea
@@ -21,23 +21,16 @@ body:
     id: expected
     attributes:
       label: What you expected
-      description: e.g. the price shown in the Snappfood app for the same address
+      description: e.g. the price shown in the Tapsi Food app for the same address
+    validations:
+      required: true
   - type: input
     id: client
     attributes:
       label: MCP client and OS
       placeholder: Claude Desktop 1.x on Windows 11
-  - type: dropdown
-    id: network
-    attributes:
-      label: Network
-      description: Snappfood blocks most non-Iranian IPs (HTTP 403).
-      options:
-        - Iranian IP, no VPN
-        - VPN or proxy
-        - SNAPP_MCP_PROXY set
   - type: input
     id: version
     attributes:
-      label: snapp-mcp version
+      label: tapsi-food-mcp version
       placeholder: "0.1.0"

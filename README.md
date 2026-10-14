@@ -1,328 +1,80 @@
-<!-- mcp-name: io.github.sepehr071/snapp-mcp -->
-> **Fork status — research only:** This fork currently contains the upstream **Snappfood/SnappMarket MCP**, not a working Tapsi Food MCP. The badges, install commands, examples, and tool list below still describe **upstream snapp-mcp**; running them will access Snapp, **not Tapsi**. Do not install or publish this fork as a Tapsi server yet. See [Tapsi API findings](research/tapsi-api-findings.md) and the [agent implementation task list](docs/superpowers/plans/2026-10-14-tapsi-food-mcp.md). Upstream attribution and MIT license are preserved.
-
+<!-- mcp-name: io.github.NikanZeyaei/tapsi-food-mcp -->
 <div align="center">
 
-<img src="https://raw.githubusercontent.com/sepehr071/snapp-mcp/main/.github/banner.png" alt="snapp-mcp: unofficial Snappfood and SnappMarket MCP server for Claude, Cursor and Copilot" width="100%">
+# tapsi-food-mcp: Tapsi Food MCP server for AI agents
 
-# snapp-mcp: Snappfood and SnappMarket MCP server for AI agents
-
-**Let your AI agent shop around on Snappfood and SnappMarket (اسنپ&zwnj;فود و اسنپ&zwnj;مارکت).**<br>
-An unofficial, read-only MCP server for Iran's food delivery and grocery apps: search dishes and groceries,<br>
-compare real prices across hundreds of restaurants and stores, read menus and reviews, and catch today's flash deals, all from Claude, Cursor or Copilot.
-
-[![PyPI](https://img.shields.io/pypi/v/snapp-mcp?color=2563eb)](https://pypi.org/project/snapp-mcp/)
-[![Python](https://img.shields.io/pypi/pyversions/snapp-mcp)](https://pypi.org/project/snapp-mcp/)
-[![CI](https://github.com/sepehr071/snapp-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/sepehr071/snapp-mcp/actions/workflows/ci.yml)
-[![MCP Registry](https://img.shields.io/badge/MCP_Registry-io.github.sepehr071%2Fsnapp--mcp-7c3aed)](https://registry.modelcontextprotocol.io/?q=snapp-mcp)
-[![License: MIT](https://img.shields.io/badge/license-MIT-16a34a)](https://github.com/sepehr071/snapp-mcp/blob/main/LICENSE)
-
-[![Install in Cursor](https://cursor.com/deeplink/mcp-install-dark.svg)](https://cursor.com/en/install-mcp?name=snapp&config=eyJjb21tYW5kIjoidXZ4IiwiYXJncyI6WyJzbmFwcC1tY3AiXX0=)
-[![Install in VS Code](https://img.shields.io/badge/VS_Code-Install_snapp--mcp-0098FF?style=flat-square&logo=visualstudiocode&logoColor=white)](https://vscode.dev/redirect/mcp/install?name=snapp&config=%7B%22command%22%3A%22uvx%22%2C%22args%22%3A%5B%22snapp-mcp%22%5D%7D)
-
-[For AI agents](#for-ai-agents) · [Quick start](#quick-start) · [What it can do](#what-it-can-do) · [Tools](#tools) · [FAQ](#faq) · [فارسی](#فارسی)
+**Let your AI agent browse Tapsi Food's catalog (تپسی‌فود).**
+An unofficial, anonymous, read-only MCP server for Tapsi Food in Iran: search dishes and groceries,
+read menus, delivery costs and reviews, and catch flash deals — with no login, from Claude, Cursor or Copilot.
 
 </div>
 
 ---
 
+## Contract
+
+- Exactly **17 `tapsi_*` tools**: 3 location, 7 discovery/search, 4 vendor/review, 3 grocery. No in-store cluster tool: its map sits next to a login-only purchase flow, out of scope for this anonymous catalog.
+- All tools register via `@tool` in `tapsi_food_mcp/registry.py` (`TOOLS`) and are served with `ToolAnnotations(read_only_hint=True)`. Capability modules define plain function names (e.g. `find_location`); `server.py` adds the public `tapsi_` prefix at registration.
+- Anonymous GET only against `https://api.tapsi.food` via `tapsi_food_mcp.http.fetch(path, *, params)`. No auth, cookies, signed headers, cart or order APIs.
+- Input coordinates are distinct `lat: float, long: float`. Geocode bias is `near_lat`/`near_long`; the geocoder wire format stays `lng,lat` internally.
+- Search/list/collection pages are **1-based** (`page`, default 1, `page_size` default 10, bounded 1-50); review pages are **0-based** (`page` default 0, `page_size` default 20, bounded 1-50).
+- Money is **integer Toman** (never divided). A search `id`/`productVariationId` is not a menu `productId`; no global SKU exists.
+- 404 on a catalog page = **unavailable coverage**, never an empty list. 429 = **back off**, never silently empty results.
+- `supported_cities` is a dated observed snapshot (Tehran, Mashhad, Shiraz served), not a live endpoint.
+
+| Tool | Inputs beyond defaults | Source and output |
+|---|---|---|
+| `tapsi_find_location` | `query: str, near_lat: float \| None = None, near_long: float \| None = None, limit: int = 10` | `Map/geocode/forward`; places with name, description, center lat/long, bounds, category; bias is longitude,latitude. |
+| `tapsi_reverse_geocode` | `lat: float, long: float` | `Map/geocode/reverse`; address, subdivisions, certainty; location param longitude,latitude. |
+| `tapsi_supported_cities` | none | Static observed snapshot (Tehran, Mashhad, Shiraz active; Isfahan/Tabriz unserved), explicitly not exhaustive or live. |
+| `tapsi_search_products` | `query: str, lat: float, long: float, business_type_id: int \| None = None, page: int = 1, page_size: int = 10` | `Search/product-search`; total/products, vendor/fee/ETA as observed, no stock promise. |
+| `tapsi_search_vendors` | same search inputs | `Search/vendor-search`; total/vendors with code, rating/status, fee/ETA as observed. |
+| `tapsi_restaurants` | `lat: float, long: float, page: int = 1, page_size: int = 10` | `page-content/business-line-15`; typed vendor rows, observed filters, not arbitrary filter parameters. |
+| `tapsi_discounted_vendors` | same list inputs | `page-content/فودشات`; curated vendor rows, not all discounted stores. |
+| `tapsi_flash_deals` | same list inputs | `page-content/تپ-تایم`; products, nullable discount stock and countdown; not FoodParty parity. |
+| `tapsi_discovery_feed` | `lat: float, long: float, page: int = 1` | `page-content/`; typed sections and total_sections; preserve unknown widgets. |
+| `tapsi_collection` | `slug: str, lat: float, long: float, page: int = 1, page_size: int = 10, filter_value: str \| None = None` | Allowlisted/current-feed `page-content/{slug}`; config, available filters, typed sections; only observed filter `1-82`. |
+| `tapsi_vendor_menu` | `vendor_code: str, lat: float, long: float, query: str \| None = None` | `v2/api/Vendor/{code}/vendor`; complete nested categories/products/variations/options/stock, coverage; optional local query filter. |
+| `tapsi_order_costs` | `vendor_code: str, lat: float, long: float` | Menu + `v1/api/Vendor/{code}/profile`; source-labelled minima/statuses with warnings on conflict, delivery/packing/tax flag, no checkout quote. |
+| `tapsi_vendor_reviews` | `vendor_code: str, page: int = 0, page_size: int = 20` | `Vendor/{code}/profile`; total/reviews including nested order-item comments. |
+| `tapsi_product_reviews` | `product_id: int` | `RateAndReview/{id}/review`; reviews and rate detail, no invented pagination. |
+| `tapsi_grocery_categories` | `lat: float, long: float` | `page-content/business-line-7` chips with content ID/filter value, not an exhaustive taxonomy. |
+| `tapsi_grocery_stores` | `lat: float, long: float, page: int = 1, page_size: int = 10` | Business-line-7 vendor rows with fee/minimum/ETA; no separate market host. |
+| `tapsi_grocery_search` | `query: str, lat: float, long: float, page: int = 1, page_size: int = 10` | `Search/product-search` with `businessTypeIds[0]=13`, grocery products only, no invented brand/SKU or exact cheapest claim. |
+
+Deliberately omitted (no parity promised): cheapest-basket comparison, single-person meal rule, coupons/rewards, grocery flash deals, in-store purchase, login/cart/order/payment, and all upstream Snapp tools.
+
+## Usage
+
+```sh
+uv run tapsi-food-mcp   # stdio MCP server
+```
+
+Typical sequence: `tapsi_find_location(query="میدان ونک")` → `tapsi_search_products(query="پیتزا", lat=…, long=…)` → `tapsi_vendor_menu(vendor_code=…)` → `tapsi_order_costs(…)` (groceries: `tapsi_grocery_search` → `tapsi_vendor_menu`).
+
 ## For AI agents
 
-- **What:** unofficial MCP server for Snappfood (snappfood.ir, restaurant delivery) and SnappMarket (snapp.market, groceries) in Iran. Queries in Persian match best; prices in Toman.
-- **Install:** `uvx snapp-mcp` or `claude mcp add snapp -- uvx snapp-mcp`. Transport: stdio. Needs [uv](https://docs.astral.sh/uv/getting-started/installation/) (Python 3.10+).
-- **Auth:** none, no API key or account. Snappfood only accepts Iranian IPs: run it from Iran without a VPN, or set `SNAPP_MCP_PROXY` to an HTTP proxy that exits in Iran.
-- **Access:** read-only. No login, basket, orders or payment, so no confirmation is needed before calling any tool.
-- **Tools:** 21: `find_location`, `reverse_geocode`, `list_cities`, then `food_*` and `market_*`. Most food and market tools need `lat` and `long` (not `food_reviews`, `market_reviews`, `market_product`, `list_cities`).
-  Typical sequence: `find_location` -> `food_find_cheapest` -> `food_order_costs` (groceries: `market_find_cheapest` -> `market_store_info`).
-- **Use when:** comparing the real total (food + packaging + delivery) of dishes or groceries near an address in Iran.
-- **Do not use when:** the user wants to order, or is outside Iran with no Iranian IP or proxy (Snappfood answers HTTP 403).
-- **Output:** compact JSON. Prices in Toman, ratings 0-5 (`null` = not rated). Restaurant and store `vendor_code` values pass between tools. FoodParty and Gem deals only run in time windows.
-- **Machine-readable:** [`server.json`](https://github.com/sepehr071/snapp-mcp/blob/main/server.json) and the
-  [awesome-iran-mcp catalog](https://github.com/sepehr071/awesome-iran-mcp) (`TOOLS.md`, `servers.json`, `llms.txt`).
-
-## Why
-
-Snappfood shows you one restaurant at a time. Finding *the cheapest pizza that actually reaches your door*
-means opening dozens of menus, adding packaging and delivery fees in your head, and checking each
-restaurant's minimum order. An agent with `snapp-mcp` does that in seconds:
-
-> **You:** Cheapest pizza delivered to Vanak Square right now, including delivery?
->
-> **Agent:** *calls* `find_location(query="میدان ونک")` → `food_find_cheapest(query="پیتزا", lat=35.7577, long=51.4095)`
->
-> | Total | Dish | Restaurant | Breakdown |
-> |---:|---|---|---|
-> | **296,400** | پیتزا سوسیس مینی + نوشابه | پیتزاتو (گاندی) | food 296,400 · free delivery |
-> | **410,000** | پیتزا اسمارت وجی لاور | پیتزا دومینوز (جردن) | food 360,000 + delivery 50,000 |
-> | **464,000** | پیتزا پپرونی اسلایسی | تله پیتزا (سعادت آباد) | food 315,000 + delivery 149,000 |
->
-> The Pizzato combo is cheapest overall. Want me to check its minimum order and coupons with `food_order_costs`?
-
-<sub>Real tool output from 2026-10-02; prices change all the time. Prices are in Toman.</sub>
-
-## What it can do
-
-- 🔎 **Search** dishes and grocery products by name near any address in Iran
-- 💸 **Find the true cheapest option**: food price after discount + packaging + delivery, checked against live menus
-- 🏪 **Browse** restaurants and stores with filters: free delivery, discount, coupon, rating, distance
-- 📋 **Read** full menus, store catalogs, minimum orders, delivery fees, ETAs and coupons
-- ⚡ **Catch deals**: FoodParty flash deals, meals for one, Gem hunts, Market Party
-- ⭐ **Check quality** with customer reviews before recommending anything
-- 🔒 **Read-only by design**: no login, no basket, no orders, no payment
-
-## Quick start
-
-You need [uv](https://docs.astral.sh/uv/getting-started/installation/) and **an Iranian IP address**
-(Snappfood blocks most foreign IPs; see [FAQ](#faq)).
-
-<details open>
-<summary><b>Claude Code</b></summary>
-
-```bash
-claude mcp add snapp -- uvx snapp-mcp
-```
-</details>
-
-<details>
-<summary><b>Claude Desktop</b></summary>
-
-Settings → Developer → Edit Config, then add:
-
-```json
-{
-  "mcpServers": {
-    "snapp": { "command": "uvx", "args": ["snapp-mcp"] }
-  }
-}
-```
-</details>
-
-<details>
-<summary><b>Cursor</b></summary>
-
-Click **Install in Cursor** above, or add the Claude Desktop block to `~/.cursor/mcp.json`.
-</details>
-
-<details>
-<summary><b>VS Code (Copilot agent mode)</b></summary>
-
-Click **Install in VS Code** above, or add to `.vscode/mcp.json`:
-
-```json
-{
-  "servers": {
-    "snapp": { "type": "stdio", "command": "uvx", "args": ["snapp-mcp"] }
-  }
-}
-```
-</details>
-
-<details>
-<summary><b>Anything else</b></summary>
-
-It's a standard stdio MCP server: run `uvx snapp-mcp`, or `pip install snapp-mcp` and run `snapp-mcp`.
-</details>
-
-Then just ask:
-
-- "Which restaurants near Tajrish have free delivery and at least 4.5 stars?"
-- "Show FoodParty deals with more than 40% off near me."
-- "Where is low-fat milk cheapest near Jordan, Tehran? Include delivery."
-- <span dir="rtl">ارزان&zwnj;ترین کباب نزدیک میدان آزادی شیراز با هزینه ارسال؟</span>
-
-## How it works
-
-```text
-  AI agent  (Claude, Cursor, Copilot, ...)
-      │
-      │  MCP over stdio
-      ▼
-  snapp-mcp  (runs on your machine, uses your IP)
-      │
-      │  HTTPS
-      ├──────▶  snappfood.ir    restaurants
-      └──────▶  snapp.market    groceries
-```
-
-`snapp-mcp` runs locally and calls the same public endpoints the Snappfood and SnappMarket web apps use.
-There's no hosted server in between, no API key, and nothing about you is sent anywhere else.
-
-## Tools
-
-Every food and grocery tool takes `lat` / `long`, because menus, prices and delivery fees depend on the
-delivery point. The agent gets them from `find_location` or `list_cities` first.
-
-<details open>
-<summary><b>📍 Location</b> (3)</summary>
-
-| Tool | What it does |
-|---|---|
-| `find_location` | Address, landmark or street → coordinates |
-| `reverse_geocode` | Coordinates → street / neighbourhood names |
-| `list_cities` | Every served city with its center point |
-</details>
-
-<details open>
-<summary><b>🍔 Snappfood: restaurants</b> (9)</summary>
-
-| Tool | What it does |
-|---|---|
-| `food_search` | Search dishes by name; price sorts are re-checked against live menus |
-| `food_find_cheapest` | Scan nearby menus + FoodParty for the lowest total price (food + packaging + delivery) |
-| `food_restaurants` | Restaurants with filters (free delivery, discount, coupon) and sorting |
-| `food_menu` | One restaurant's full menu with prices, packaging fees and availability |
-| `food_order_costs` | Delivery fee, ETA, minimum order and coupons of one restaurant |
-| `food_reviews` | Customer reviews, with what they ordered and the restaurant's reply |
-| `food_party_deals` | FoodParty flash deals still in stock, with the deal window |
-| `food_meal_for_one` | Single-person meals up to 299k Toman with free delivery |
-| `food_discounted_vendors` | Restaurants running discounts now, plus live Gem deals |
-</details>
-
-<details open>
-<summary><b>🛒 SnappMarket: groceries</b> (9)</summary>
-
-| Tool | What it does |
-|---|---|
-| `market_search` | Search a product across stores, grouped by store |
-| `market_find_cheapest` | Cheapest in-stock offers for a product, one flat list |
-| `market_stores` | Stores delivering to a point, by delivery fee or rating |
-| `market_store_info` | Delivery fee, minimum order, opening hours and coupons of a store |
-| `market_store_products` | Search inside a store, or browse it by category |
-| `market_categories` | Product categories and their ids |
-| `market_product` | One product's details and price in a store |
-| `market_party_deals` | Market Party flash deals, biggest discount first |
-| `market_reviews` | Customer comments on a store |
-</details>
-
-All 21 tools are annotated `readOnlyHint: true` and return compact structured JSON, so they don't flood the agent's context.
-
-## Good to know
-
-- **Prices are in Toman** (1 Toman = 10 Rial). Ratings are normalized to **0–5**, like the apps; `null` means not rated yet.
-- **True cost of a food order** = price − discount + packaging + delivery − coupon, and the basket must reach the restaurant's minimum order. `food_find_cheapest` and `food_order_costs` give the agent every piece of that.
-- **Persian queries match best** (`پیتزا`, `کباب`, `شیر`). Name filters treat Arabic ي/ك and half-space vs space as equal.
-
-## FAQ
-
-<details>
-<summary><b>Is there a Snappfood or SnappMarket API or MCP server for AI agents?</b></summary>
-
-Yes: `snapp-mcp` is an unofficial MCP server with 21 read-only tools for dishes, menus, groceries, delivery fees and
-deals. It calls the same public endpoints the Snappfood and SnappMarket web apps use; no API key is needed.
-</details>
-
-<details>
-<summary><b>How do I use Snappfood with Claude, Cursor or Copilot?</b></summary>
-
-Add the server with `claude mcp add snapp -- uvx snapp-mcp` (or the matching config in
-[Quick start](#quick-start) for Claude Desktop, Cursor and VS Code), then ask for a dish near an address, in Persian or English.
-</details>
-
-<details>
-<summary><b>Is it official, safe and free? Does it work outside Iran?</b></summary>
-
-It is unofficial and not affiliated with Snapp. It is read-only (no login, basket or payment), runs on your machine,
-and is free under the MIT license. Outside Iran, Snappfood blocks most IPs, so use an Iranian IP or `SNAPP_MCP_PROXY`.
-</details>
-
-<details>
-<summary><b>I get "blocked the request (HTTP 403)"</b></summary>
-
-Snappfood's firewall only accepts Iranian IP addresses. Run the server on a machine in Iran with the VPN off.
-If you must use a VPN, set `SNAPP_MCP_PROXY` to an HTTP proxy that exits in Iran. Normal system proxy variables
-are ignored on purpose, because a foreign VPN exit would get blocked. SnappMarket is less strict.
-</details>
-
-<details>
-<summary><b>Can it place an order for me?</b></summary>
-
-No, and that's deliberate. It has no login and never touches the basket, order or payment endpoints.
-The agent finds the best option; you tap order in the app.
-</details>
-
-<details>
-<summary><b>FoodParty or Gem results are empty</b></summary>
-
-Those deals only run in time windows. `active: false` or `gem: null` means no window is live right now.
-</details>
-
-<details>
-<summary><b>Claude Desktop says <code>uvx</code> is not found</b></summary>
-
-Use the full path to `uvx` (`where uvx` on Windows, `which uvx` on macOS/Linux) as `command`.
-</details>
-
-<details>
-<summary><b>How do I debug what the agent sees?</b></summary>
-
-```bash
-npx @modelcontextprotocol/inspector uvx snapp-mcp
-```
-</details>
-
-## Configuration
-
-| Variable | Default | Meaning |
-|---|---|---|
-| `SNAPP_MCP_PROXY` | unset | HTTP proxy for every request, e.g. `http://user:pass@host:port` |
-
-<a id="فارسی"></a>
-
-## فارسی: سرور MCP اسنپ&zwnj;فود و اسنپ&zwnj;مارکت
-
-<div dir="rtl">
-
-**snapp-mcp** یک سرور MCP غیررسمی و فقط&zwnj;خواندنی برای اسنپ&zwnj;فود و اسنپ&zwnj;مارکت در ایران است. این سرور به دستیار هوش مصنوعی شما (Claude، Cursor، Copilot و ...) اجازه می&zwnj;دهد در اسنپ&zwnj;فود و اسنپ&zwnj;مارکت جستجو کند،
-قیمت واقعی غذا و کالا را بین صدها رستوران و فروشگاه مقایسه کند، منو و نظرات را بخواند و تخفیف&zwnj;های فعال (فودپارتی، جم، مارکت&zwnj;پارتی) را پیدا کند.
-
-- فقط خواندنی است: وارد حساب نمی&zwnj;شود، سبد خرید نمی&zwnj;سازد و سفارش ثبت نمی&zwnj;کند.
-- قیمت نهایی را با بسته&zwnj;بندی، هزینه ارسال و حداقل سفارش حساب می&zwnj;کند.
-- روی سیستم خود شما اجرا می&zwnj;شود و به هیچ سرور واسطی داده نمی&zwnj;فرستد.
-
-**نصب در Claude Code:**
-
-</div>
-
-```bash
-claude mcp add snapp -- uvx snapp-mcp
-```
-
-<div dir="rtl">
-
-بعد بپرسید: «ارزان&zwnj;ترین پیتزا با هزینه ارسال نزدیک میدان ونک کجاست؟»
-
-**نکته:** سرور باید روی سیستمی با IP ایران و بدون VPN اجرا شود، چون اسنپ&zwnj;فود درخواست&zwnj;های خارج از ایران را مسدود می&zwnj;کند.
-
-</div>
+- **What:** unofficial, anonymous, read-only MCP server for Tapsi Food (api.tapsi.food) in Iran. Queries in Persian match best; prices in integer Toman.
+- **Install:** not published — **do not install from PyPI or the MCP Registry**; there is no `tapsi-food-mcp` artifact there. From source: `uv run tapsi-food-mcp`. Transport: stdio. Needs [uv](https://docs.astral.sh/uv/getting-started/installation/) (Python 3.10+).
+- **Auth:** none, no API key or account.
+- **Access:** read-only GETs only. No login, basket, orders or payment, so no confirmation is needed before calling any tool.
+- **Output:** compact JSON. Prices in integer Toman, ratings 0-5 (`null` = not rated). Vendor `vendor_code` values pass between tools.
+
+## Source, coverage and limitations
+
+- Evidence: [Tapsi API findings](research/tapsi-api-findings.md) (snapshot **2026-10-14**) and raw captures in `research/samples/`. The endpoints are undocumented site behavior and can change without notice.
+- Served cities observed: **Tehran (35.6892, 51.389), Mashhad (36.295289, 59.585015), Shiraz (29.67185, 52.499858)**. Isfahan/Tabriz currently yield page-content 404, empty search, but vendor menus may return 200 `OutOfCoverage` with `Unknown/-1` fee — reported as not deliverable, never orderable.
+- Menu/profile minimum-basket and status may conflict (observed `2y97wk`: 400000/Open vs 300000/Close). `tapsi_order_costs` reports both with source labels and a warning; never a checkout-accurate total. The `tax` field is a boolean flag, not a tax amount.
+- No coupon/reward data, market-wide taxonomy, brand/SKU equivalence, single-person meal rule, grocery flash deals or complete cheapest results are claimed; bounded comparisons are labelled incomplete.
+- Throttling headers observed (`ofd-ratelimit-limit: 500`); access policy for hosted/non-Iranian IPs is unverified — use low concurrency and back off on 429.
 
 ## Development
 
-```bash
-git clone https://github.com/sepehr071/snapp-mcp && cd snapp-mcp
-uv sync
-uv run pytest            # offline, against recorded responses
-uv run pytest -m live    # real APIs (needs an Iranian IP)
-uv run ruff check .
-```
+- Deterministic unit tests with a `MockTransport` route table: `uv run pytest -q` (offline; live network never required on PRs).
+- Opt-in live end-to-end tests: `uv run pytest -m live -q`. Three tests spawn the stdio MCP server and make anonymous GET calls for Tehran search/menu/reviews, Mashhad and grocery search, and unserved Isfahan. These depend on network access and mutable catalog coverage; they never run in the default suite.
+- Lint: `uv run ruff check .`, `uv run ruff format --check .`.
+- Release automation is **disabled** (`.github/workflows/publish.yml` is a no-op). Any future release needs a separately reviewed workflow; `server.json` carries no `packages` block until a real artifact exists.
 
-Tools live in `src/snapp_mcp/food.py`, `market.py` and `location.py`; each is a typed async function with a docstring
-that tells the agent when to use it. Issues and PRs are welcome, especially new tools and fixes for API changes.
+## Provenance
 
-Releases: bump the version in `pyproject.toml` and `server.json`, then push a `v*` tag. GitHub Actions tests,
-publishes to PyPI and the [MCP Registry](https://registry.modelcontextprotocol.io), and creates the GitHub Release.
-
-## Related servers
-
-- [Okala MCP server](https://github.com/sepehr071/okala-mcp) for grocery prices and deals across stores
-- [awesome-iran-mcp](https://github.com/sepehr071/awesome-iran-mcp): catalog of all Iranian-service MCP servers
-
-## Disclaimer
-
-Unofficial and not affiliated with or endorsed by Snapp. It uses the public endpoints of the snappfood.ir and
-snapp.market web apps, which can change without notice. Please keep request rates reasonable.
-
-## License
-
-[MIT](https://github.com/sepehr071/snapp-mcp/blob/main/LICENSE)
-
-If this saves you clicks, a star helps others find it.
+Forked from [`sepehr071/snapp-mcp` at `aef14709260263df1add16dc2665ce28451c48a7`](https://github.com/sepehr071/snapp-mcp/tree/aef14709260263df1add16dc2665ce28451c48a7) (Snappfood/SnappMarket MCP). Upstream MIT copyright (Sepehr Radmard) is preserved in [`LICENSE`](LICENSE); Tapsi Food functionality here is new work in this fork and is unaffiliated with Tapsi or Snapp.

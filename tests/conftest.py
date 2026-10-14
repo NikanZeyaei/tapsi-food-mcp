@@ -1,18 +1,9 @@
-import json
-from pathlib import Path
-
 import httpx
 import pytest
 from mcp import Client
 
-from snapp_mcp import http
-from snapp_mcp.server import mcp
-
-FIXTURES = Path(__file__).parent / "fixtures"
-
-
-def fixture(name: str):
-    return json.loads((FIXTURES / name).read_text(encoding="utf-8"))
+from tapsi_food_mcp import http
+from tapsi_food_mcp.server import mcp
 
 
 @pytest.fixture
@@ -30,7 +21,7 @@ def fresh_http_client():
 
 @pytest.fixture
 def api():
-    """Route table for a fake upstream: api["/path"] = JSON body, or a callable(request) -> httpx.Response.
+    """Route table for a fake Tapsi Food API: api["/path"] = JSON body, or a callable(request) -> httpx.Response.
 
     Keys match the URL path only (host ignored). Unknown paths return 404. Every
     request is appended to api.calls so tests can assert on query params.
@@ -46,7 +37,7 @@ def api():
         routes.calls.append(request)
         target = routes.get(request.url.path)
         if target is None:
-            return httpx.Response(404, json={"error": "no fake route"})
+            return httpx.Response(404, json={"message": "Not Found"})
         if callable(target):
             return target(request)
         return httpx.Response(200, json=target)

@@ -1,32 +1,12 @@
 {
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
-  "name": "io.github.sepehr071/snapp-mcp",
-  "title": "Snappfood & SnappMarket",
-  "description": "Unofficial read-only Snappfood & SnappMarket: search food and groceries, compare prices, deals.",
+  "name": "io.github.NikanZeyaei/tapsi-food-mcp",
+  "title": "Tapsi Food",
+  "description": "Unofficial read-only Tapsi Food catalog: search dishes and groceries, read menus, costs and reviews, catch flash deals.",
   "repository": {
-    "url": "https://github.com/sepehr071/snapp-mcp",
+    "url": "https://github.com/NikanZeyaei/tapsi-food-mcp",
     "source": "github"
   },
-  "websiteUrl": "https://github.com/sepehr071/snapp-mcp",
-  "version": "0.1.3",
-  "packages": [
-    {
-      "registryType": "pypi",
-      "registryBaseUrl": "https://pypi.org",
-      "identifier": "snapp-mcp",
-      "version": "0.1.3",
-      "runtimeHint": "uvx",
-      "transport": {
-        "type": "stdio"
-      },
-      "environmentVariables": [
-        {
-          "name": "SNAPP_MCP_PROXY",
-          "description": "Optional HTTP proxy URL. Snappfood only accepts Iranian IP addresses; system proxy settings are ignored.",
-          "isRequired": false,
-          "isSecret": false
-        }
-      ]
-    }
-  ]
+  "websiteUrl": "https://github.com/NikanZeyaei/tapsi-food-mcp",
+  "version": "0.1.0"
 }

@@ -20,6 +20,32 @@
 - Fixtures: raw captures in `research/samples/` are evidence, not permanent unit-test goldens with time-sensitive fields. Create minimal deterministic fixtures representing real consumer-visible branches. Tests must exercise behavior/edge cases, not wording, forwarding or implementation snapshots.
 - Safe concurrency: no concurrent editing of shared metadata/server/registry/README/tests/conftest.py. Parallel owners may edit disjoint modules + disjoint tests after shared interfaces are settled; integration owner resolves cross-module imports and runs checks only after changes land.
 
+## Locked implementation contract (Task 1; 2026-10-14)
+
+The public surface is exactly **17 `tapsi_*` tools**: three location, seven discovery/search, four vendor/review, three grocery. Do not add the optional in-store clusters tool: its map is adjacent to a login-only purchasing flow and is not needed for this anonymous food catalog. All registered functions use the existing `@tool` decorator and `registry.TOOLS`; the integration owner alone edits registry/server/README/test harness/metadata. Input coordinates are distinct `lat: float, long: float`; geocode query bias uses `near_lat: float | None = None, near_long: float | None = None`. Search/list/collection pages are 1-based; review pages are 0-based. `page_size` defaults to 10 for catalog lists and 20 for reviews, bounded 1–50; page is positive except review page >=0. Fetch accepts relative paths and keyword `params` only; only anonymous GET is allowed. Money is integer Toman without conversion; absent values remain null, never inferred. Catalog outputs carry `total`, `page`, `source`, `coverage` (`available` or `unavailable`), and when relevant `items` under the specific `products`/`vendors`/`stores`/`deals` key. Coverage is about the requested location, not geocode reachability; an empty search cannot establish service alone, so report `unavailable` for an empty result and do not assert orderability. Paginated CMS `meta.totalItems` counts sections when sections are mixed, not vendors; keep `total_sections` on generic feeds. No speculative `sort` or arbitrary filters: only collection `filtersAndSorts=1-82` exposed as optional `filter_value: str | None` on an allowlisted collection. Slugs limited to `تپ-تایم`, `فودشات`, `تخفیف-فضایی`, `business-line-15`, `business-line-7` plus slugs discovered in the current feed (validated as a single path segment).
+
+| Owner | Public tool (Python symbol is name without `tapsi_`) | Inputs beyond defaults | Read-only source and output |
+|---|---|---|---|
+| Location | `tapsi_find_location` | `query: str, near_lat: float | None = None, near_long: float | None = None, limit: int = 10` | `Map/geocode/forward`; `places` with name, description, center lat/long, bounds and category; bias is longitude,latitude. |
+| Location | `tapsi_reverse_geocode` | `lat: float, long: float` | `Map/geocode/reverse`; address, subdivisions, certainty; location param longitude,latitude. |
+| Location | `tapsi_supported_cities` | none | Static observed selector snapshot (Tehran, Mashhad, Shiraz active; Isfahan/Tabriz unserved), explicitly not exhaustive or live. |
+| Discovery | `tapsi_search_products` | `query: str, lat: float, long: float, business_type_id: int | None = None, page: int = 1, page_size: int = 10` | `Search/product-search`; total/products with variation ID separate from product/header ID, vendor/fee/ETA as observed, no stock promise. |
+| Discovery | `tapsi_search_vendors` | same search inputs | `Search/vendor-search`; total/vendors with code, rating/status, fee/ETA as observed. |
+| Discovery | `tapsi_restaurants` | `lat: float, long: float, page: int = 1, page_size: int = 10` | `page-content/business-line-15`; typed vendor rows, observed available filters, not arbitrary filter parameters. |
+| Discovery | `tapsi_discounted_vendors` | same list inputs | `page-content/فودشات`; curated vendor rows, not all discounted stores. |
+| Discovery | `tapsi_flash_deals` | same list inputs | `page-content/تپ-تایم`; products, nullable discount stock and countdown; not FoodParty parity. |
+| Discovery | `tapsi_discovery_feed` | `lat: float, long: float, page: int = 1` | `page-content/`; typed sections and total_sections; preserve unknown widgets. |
+| Discovery | `tapsi_collection` | `slug: str, lat: float, long: float, page: int = 1, page_size: int = 10, filter_value: str | None = None` | Allowlisted/current-feed `page-content/{slug}`; config, available filters and typed sections; only observed filter `1-82`. |
+| Vendor | `tapsi_vendor_menu` | `vendor_code: str, lat: float, long: float, query: str | None = None` | `v2/api/Vendor/{code}/vendor`; complete nested categories/products/variations/options/stock, coverage; optional local query filter. |
+| Vendor | `tapsi_order_costs` | `vendor_code: str, lat: float, long: float` | Menu and `v1/api/Vendor/{code}/profile`; source-labelled minima/statuses and warnings on conflict, delivery/packing/tax flag, no checkout quote. |
+| Vendor | `tapsi_vendor_reviews` | `vendor_code: str, page: int = 0, page_size: int = 20` | `Vendor/{code}/profile`; total/reviews including nested order-item comments. |
+| Vendor | `tapsi_product_reviews` | `product_id: int` | `RateAndReview/{id}/review`; reviews and rate detail, no invented pagination. |
+| Grocery | `tapsi_grocery_categories` | `lat: float, long: float` | `page-content/business-line-7` chips with content ID/filter value, not an exhaustive taxonomy. |
+| Grocery | `tapsi_grocery_stores` | `lat: float, long: float, page: int = 1, page_size: int = 10` | Business-line-7 vendor rows with fee/minimum/ETA; no separate market host. |
+| Grocery | `tapsi_grocery_search` | `query: str, lat: float, long: float, page: int = 1, page_size: int = 10` | `Search/product-search` with `businessTypeIds[0]=13`, grocery products only, no invented brand/SKU or exact cheapest claim. |
+
+Omitted deliberately: Snapp cheapest comparison, meal-for-one, coupons, grocery party deals, in-store purchase, login/cart/order/payment, and all upstream Snapp tools. A 404 catalog page maps to explicit unavailable coverage; a 429 remains actionable, never silently empties a response. The integration owner resolves cross-module imports and removes the obsolete package and fixtures only after parallel tasks land.
+
 ## File ownership map and fixed interfaces
 
 | Unit | Files to own | Interface / downstream contract |
